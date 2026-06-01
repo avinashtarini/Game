@@ -1,0 +1,16 @@
+{
+    "name": "@game/uno-engine",
+    "version": "1.0.0",
+    "private": true,
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc"
+    },
+    "dependencies": {
+        "@game/shared-types": "workspace:*"
+    }
+}
