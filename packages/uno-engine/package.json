@@ -8,9 +8,13 @@
         "dist"
     ],
     "scripts": {
-        "build": "tsc"
+        "build": "tsc",
+        "test": "vitest"
     },
     "dependencies": {
         "@game/shared-types": "workspace:*"
+    },
+    "devDependencies": {
+        "vitest": "^4.1.8"
     }
 }
