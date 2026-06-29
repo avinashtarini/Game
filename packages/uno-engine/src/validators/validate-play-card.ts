@@ -1,6 +1,5 @@
-import { GameState, PlayCardMove } from "@game/shared-types"
+import { GameState, PlayCardMove, ValidationResult } from "@game/shared-types"
 
-import { ValidationResult } from "../types/validation-result"
 import { canPlayCard } from "../rules/can-play-card"
 
 export function validatePlayCardMove(

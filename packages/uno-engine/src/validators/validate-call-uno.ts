@@ -1,6 +1,4 @@
-import { CallUnoMove, GameState } from "@game/shared-types"
-
-import { ValidationResult } from "../types/validation-result"
+import { CallUnoMove, GameState, ValidationResult } from "@game/shared-types"
 
 export function validateCallUnoMove(
   state: GameState,

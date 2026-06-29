@@ -1,4 +1,4 @@
-import { GameState } from "@game/shared-types"
+import { GameState } from "./game-state"
 
 export interface MoveResult {
   success: boolean

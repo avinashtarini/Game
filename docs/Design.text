@@ -1,0 +1,544 @@
+# UNO Multiplayer Platform - System Design & Architecture
+
+## Vision
+
+Build a production-grade UNO platform demonstrating senior-level Full Stack Engineering skills.
+
+The application must support:
+
+* Offline-first gameplay
+* Guest users
+* Registered users
+* Online multiplayer
+* Realtime synchronization
+* Cross-platform mobile support
+* Scalable backend architecture
+* Event-driven design
+* Enterprise-level code organization
+
+The goal is not merely to build a card game but to showcase architecture, scalability, maintainability, testing, and distributed-system concepts.
+
+---
+
+# Core Functional Requirements
+
+## Guest Mode
+
+Users can:
+
+* Launch app without registration
+* Play single-player UNO
+* Save progress locally
+* Track local statistics
+* Continue playing offline indefinitely
+
+No backend dependency is required.
+
+---
+
+## Registered User Mode
+
+Users can:
+
+* Sign up
+* Login
+* Sync data across devices
+* Access multiplayer features
+* Maintain persistent profile and statistics
+
+---
+
+## Offline First
+
+The application must continue functioning when:
+
+* Internet is unavailable
+* API is unavailable
+* Backend services are down
+
+Single-player gameplay must never depend on server availability.
+
+---
+
+## Multiplayer
+
+Users can:
+
+* Create rooms
+* Join rooms
+* Start matches
+* Play in realtime
+* Reconnect after temporary disconnects
+
+Communication occurs through Socket.IO.
+
+---
+
+## Synchronization
+
+Offline activity must eventually synchronize.
+
+Examples:
+
+* Offline games
+* Statistics
+* Achievements
+* User progression
+* Match history
+
+Sync occurs automatically when connectivity returns.
+
+---
+
+# Non Functional Requirements
+
+## Scalability
+
+Target architecture:
+
+Single Instance
+↓
+
+Socket.IO Cluster
+↓
+
+Redis Adapter
+↓
+
+Multi-region deployment
+
+---
+
+## Reliability
+
+Goals:
+
+* Reconnect support
+* Idempotent synchronization
+* Durable persistence
+* Event replay capability
+
+---
+
+## Maintainability
+
+Requirements:
+
+* Monorepo
+* Shared contracts
+* Strong TypeScript typing
+* Test coverage
+* Package boundaries
+
+---
+
+# Monorepo Structure
+
+packages/
+
+shared-types
+uno-engine
+
+apps/
+
+api
+mobile
+
+---
+
+# Package Responsibilities
+
+## shared-types
+
+Contains:
+
+* DTOs
+* Contracts
+* Events
+* Socket payloads
+* Shared interfaces
+
+No business logic.
+
+---
+
+## uno-engine
+
+Pure game engine.
+
+Contains:
+
+* Game rules
+* Move validation
+* Turn calculation
+* Winner detection
+* Card effects
+
+Must be deterministic.
+
+No database.
+
+No network.
+
+No framework.
+
+---
+
+## api
+
+Responsibilities:
+
+* REST APIs
+* Socket.IO
+* Authentication
+* Persistence
+* Synchronization
+* Multiplayer orchestration
+
+Does not contain UNO rule logic.
+
+---
+
+## mobile
+
+React Native + Expo.
+
+Responsibilities:
+
+* UI
+* Local storage
+* Offline persistence
+* Sync orchestration
+* Multiplayer interaction
+
+---
+
+# Current Data Models
+
+## Player
+
+playerId
+displayName
+isHost
+isConnected
+
+---
+
+## Room
+
+roomId
+hostPlayerId
+players[]
+gameId
+createdAt
+
+---
+
+## GameState
+
+gameId
+roomId
+players
+currentPlayerIndex
+direction
+drawPile
+discardPile
+winner
+status
+
+---
+
+# API Design
+
+## Room APIs
+
+POST /rooms
+
+GET /rooms/:roomId
+
+POST /rooms/:roomId/join
+
+---
+
+## Game APIs
+
+POST /games/rooms/:roomId/start
+
+GET /games/:gameId
+
+POST /games/:gameId/moves
+
+---
+
+# Socket Events
+
+## Room
+
+ROOM_CREATE
+
+ROOM_JOIN
+
+ROOM_UPDATED
+
+ROOM_ERROR
+
+---
+
+## Game
+
+GAME_START
+
+GAME_MOVE
+
+GAME_STATE
+
+GAME_ERROR
+
+---
+
+# Backend Managers
+
+## RoomManager
+
+Responsibilities:
+
+* Create room
+* Join room
+* Start room game
+* Validate room state
+
+Storage:
+
+Map<roomId, Room>
+
+Current implementation is in-memory.
+
+Future implementation:
+
+Redis + Database
+
+---
+
+## GameManager
+
+Responsibilities:
+
+* Create game
+* Retrieve game
+* Process move
+* Update state
+
+Storage:
+
+Map<gameId, GameState>
+
+Current implementation is in-memory.
+
+Future implementation:
+
+Redis + Database
+
+---
+
+# Testing Strategy
+
+## Unit Tests
+
+Target:
+
+uno-engine
+
+Examples:
+
+* Reverse card
+* Skip card
+* Draw Two
+* Wild Draw Four
+
+---
+
+## API Tests
+
+Using:
+
+* Vitest
+* Supertest
+
+Examples:
+
+* Create room
+* Join room
+* Start game
+* Make move
+
+---
+
+## Socket Tests
+
+Using:
+
+* Vitest
+* socket.io-client
+
+Examples:
+
+* ROOM_JOIN -> ROOM_UPDATED
+* GAME_START -> GAME_STATE
+* GAME_MOVE -> GAME_STATE
+
+---
+
+# Offline First Architecture
+
+Local database is source of truth while offline.
+
+Examples:
+
+* AsyncStorage initially
+* SQLite later
+
+All user actions generate local events.
+
+Examples:
+
+GamePlayed
+
+AchievementUnlocked
+
+ProfileUpdated
+
+StatisticsChanged
+
+These events are queued.
+
+When internet returns:
+
+Sync Engine
+↓
+
+Upload Pending Events
+↓
+
+Backend Processes Events
+↓
+
+Server Acknowledges
+↓
+
+Queue Cleared
+
+---
+
+# Future Database Design
+
+## Users
+
+userId
+
+email
+
+createdAt
+
+---
+
+## Games
+
+gameId
+
+ownerId
+
+startedAt
+
+endedAt
+
+winnerId
+
+---
+
+## Statistics
+
+userId
+
+gamesPlayed
+
+wins
+
+losses
+
+winRate
+
+---
+
+## Achievements
+
+achievementId
+
+userId
+
+unlockedAt
+
+---
+
+# Future Infrastructure
+
+Phase 1
+
+In-memory storage
+
+Socket.IO
+
+Single instance
+
+---
+
+Phase 2
+
+PostgreSQL
+
+Prisma
+
+JWT Authentication
+
+---
+
+Phase 3
+
+Redis
+
+Socket.IO Redis Adapter
+
+Distributed Rooms
+
+---
+
+Phase 4
+
+Docker
+
+CI/CD
+
+Kubernetes
+
+Horizontal Scaling
+
+---
+
+# Development Order
+
+1. UNO Engine
+2. Shared Contracts
+3. REST APIs
+4. Socket.IO
+5. Socket Tests
+6. React Native Integration
+7. Offline Storage
+8. Sync Engine
+9. Authentication
+10. PostgreSQL
+11. Redis
+12. Docker
+13. Kubernetes
+
+Current Stage:
+
+Socket.IO Integration + Multiplayer Flow Completion

@@ -1,9 +1,8 @@
-import { GameState, Move } from "@game/shared-types"
+import { GameState, Move, MoveResult } from "@game/shared-types"
 
 import { validatePlayCardMove } from "./validators/validate-play-card"
 import { applyPlayCardMove } from "./moves/apply-play-card"
 
-import { MoveResult } from "./types/move-result"
 import { validateDrawCardMove } from "./validators/validate-draw-card"
 import { applyDrawCardMove } from "./moves/apply-draw-card"
 import { applyCallUnoMove } from "./moves/apply-call-uno"
